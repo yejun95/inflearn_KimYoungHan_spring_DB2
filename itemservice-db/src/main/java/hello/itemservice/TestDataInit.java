@@ -15,6 +15,8 @@ public class TestDataInit {
 
     /**
      * 확인용 초기 데이터 추가
+     * 스프링이 완전 초기화된 이후에 호출되도록 함
+     * @PostContruct는 AOP가 제대로 초기화되지 않았음에도 실행될 수 있음
      */
     @EventListener(ApplicationReadyEvent.class)
     public void initData() {
