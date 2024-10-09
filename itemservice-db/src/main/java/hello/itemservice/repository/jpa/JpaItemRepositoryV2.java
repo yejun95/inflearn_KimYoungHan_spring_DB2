@@ -21,59 +21,41 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JpaItemRepositoryV2 implements ItemRepository {
 
-    //JPA 사용 시 필수
-    private final EntityManager em;
+    private final SpringDataJpaItemRepository repository;
 
     @Override
     public Item save(Item item) {
-        em.persist(item);
-        return item;
+        return repository.save(item);
     }
 
     @Override
     public void update(Long itemId, ItemUpdateDto updateParam) {
-        //조회 시점에 jpa가 미리 스냅샷을 찍고, commit 되는 순간 update를 날림
-        Item findItem = em.find(Item.class, itemId);
+        Item findItem = repository.findById(itemId).orElseThrow();
         findItem.setItemName(updateParam.getItemName());
         findItem.setPrice(updateParam.getPrice());
         findItem.setQuantity(updateParam.getQuantity());
-
     }
 
     @Override
     public Optional<Item> findById(Long id) {
-        Item item = em.find(Item.class, id);
-        return Optional.ofNullable(item);
+        return repository.findById(id);
     }
 
     @Override
     public List<Item> findAll(ItemSearchCond cond) {
-        //i = Item 객체를 뜻함
-        String jpql = "select i from Item i";
-        Integer maxPrice = cond.getMaxPrice();
         String itemName = cond.getItemName();
-        if (StringUtils.hasText(itemName) || maxPrice != null) {
-            jpql += " where";
+        Integer maxPrice = cond.getMaxPrice();
+
+        //동적 쿼리를 전부 메서드 형식으로 생성하였지만, 실무에서는 이렇게 쓰지 않는다.
+        //동적 쿼리의 경우 Querydsl를 활용
+        if (StringUtils.hasText(itemName) && maxPrice != null) {
+            return repository.findItems("%" + itemName + "%", maxPrice);
+        } else if (StringUtils.hasText(itemName)) {
+            return repository.findByItemNameLike("%" + itemName + "%");
+        } else if (maxPrice != null) {
+            return repository.findByPriceLessThanEqual(maxPrice);
+        } else {
+            return repository.findAll();
         }
-        boolean andFlag = false;
-        if (StringUtils.hasText(itemName)) {
-            jpql += " i.itemName like concat('%',:itemName,'%')";
-            andFlag = true;
-        }
-        if (maxPrice != null) {
-            if (andFlag) {
-                jpql += " and";
-            }
-            jpql += " i.price <= :maxPrice";
-        }
-        log.info("jpql={}", jpql);
-        TypedQuery<Item> query = em.createQuery(jpql, Item.class);
-        if (StringUtils.hasText(itemName)) {
-            query.setParameter("itemName", itemName);
-        }
-        if (maxPrice != null) {
-            query.setParameter("maxPrice", maxPrice);
-        }
-        return query.getResultList();
     }
 }
