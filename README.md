@@ -67,3 +67,38 @@ Optional<Item> findById(Long id);
 - `<sql></sql> 코드 사용시 `<include></include` 태그로 재사용 가능
 
 - `<resultMap></resultMap>` db 컬럼과 객체 프로퍼티 명이 상이해서 `as` 쓰는 대신 사용 가능
+<br>
+<br>
+
+### 학습 범위 : 7-5-1 - 7-5-8
+- JPA (Java-Persistence Api)
+
+- ORM (Object-Relational Mapping)
+
+- SQL 중심적인 개발에서 객체 중심으로 개발
+
+- Annotation
+  - `@Entity` : 객체를 JPA로 등록
+  - `@Table(name = "item")` 객체명 = 테이블 명이 같으면 생략 가능
+  - `@Id @GeneratedValue(strategy = GenerationType.IDENTITY)` = auto-increment
+  - @Column(name = "item_name", length = 10) : db 컬럼명과 자바 객체명이 상이할 시 사용 -> 스네이크 -> 카멜로 자동 변환되기 때문에 없어도 무방
+  
+- EntityManager : 의존성 주입 필수
+
+- JPQL : 엔티티 객체를 대상으로 SQL 실행 -> 동적 쿼리 문제가 JdbcTemplate 처럼 발생 -> Querydsl 기술 활용 필요
+
+- 예외 변환 : `@Repository`가 붙으면 예외 변환 AOP 적용 대상이 됨
+  - 스프링 부트가 `PersistenceExceptionTranslationPostProcessor`를 자동 등록해줘서 AOP Proxy가 예외 변환을 해주는 것
+<br>
+
+**예외 변환 전**
+![image](https://github.com/user-attachments/assets/56a649c3-2aed-4e89-a553-f32db17a0cc8)
+> JPA Exception에 종속되어 버림
+<br>
+
+**예외 변환 후**
+![image](https://github.com/user-attachments/assets/f7a1bc27-9a5d-40ae-bbfe-57abc343a7b6)
+> Proxy AOP에 의해 예외 변환
+<br>
+<br>
+
