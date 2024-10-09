@@ -102,3 +102,54 @@ Optional<Item> findById(Long id);
 <br>
 <br>
 
+### 학습 범위 : 7-6-1 - 7-6-6
+- 스프링 데이터 JPA : JPA을 좀 더 편리하게 사용하도록 함
+  - CRUD + 쿼리
+  - 페이징
+  - 동일한 인터페이스
+  - 메서드 이름으로 쿼리생성 : 로직이 복잡해지면 이름이 길어지는 단점 발생
+
+- Spring Data는 비즈니스 로직에 더 집중할 수 있게 데이터베이스 사용 기능을 클래스 레벨에서 추상화
+
+- Spring Data라는 추상기술은 JPA, Redis, Mysql 등등 모든 기술을 구현해서 사용 할 수 있음 -> 현 학습에서는 JPA로 진행하는 것
+
+- JpaRepository : 해당 인터페이스를 상속받으면 됨
+
+- `@Query` : JPQL 사용을 통한 SQL 직접 작성
+<br>
+
+**의존 관계**
+- ItemRepository 인터페이스를 SpringDataJpaItemRepository를 만들어서 구현해야함 -> OCP를 지키기 위해
+![image](https://github.com/user-attachments/assets/76822547-b9fc-4045-b623-cb017e4b80eb)
+> 만약 ItemService에 바로 JpaRepository 인터페이스를 구현한다면 쓸 수는 있겠지만<br>
+OCP를 지킬 수 없다.
+<br>
+<br>
+
+### 학습 범위 : 7-7-1 - 7-7-5
+- Querydsl : 쿼리를 java 코드로 개발할 수 있게 지원하는 프레임워크
+  - dsl이란 도메인 특화 언어라는 뜻
+  - JPQL을 만들어주는 빌더라고 보면됨
+  - 💡 type-check가 가능하기 때문에 컴파일 시점에 쿼리에 에러가 있는지 발견이 가능하다.
+
+- Querydsl > JPQL > SQL 로 변환 과정을 거침
+
+- JPQL로 해결하기 어려운 복잡한 쿼리는 네이티브 SQL을 사용 (JdbcTemplate, Mybatis)
+
+- JPAQueryFactory
+
+- JPA, Spring Data JPA, Querydsl 의존성을 전부 주입받아 그때 그때 알맞은 것을 사용해도 된다.
+  - 팀이 사용하는 통일 양식을 따르면 될 것
+
+```java
+private final EntityManager em;
+private final JPAQueryFactory query;
+private final SpringDataJpaItemRepository repository;
+
+public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository repository) {
+    this.em = em;
+    this.query = new JPAQueryFactory(em);
+    this.repository = repository;
+}
+```
+
