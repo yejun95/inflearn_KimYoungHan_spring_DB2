@@ -6,13 +6,11 @@ import hello.itemservice.repository.ItemSearchCond;
 import hello.itemservice.repository.ItemUpdateDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
 import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +19,7 @@ import java.util.Optional;
 @Repository
 @Transactional //JPA의 모든 데이터 변경은 트랜잭션 안에서 이루어져야함, 조회 제외
 @RequiredArgsConstructor
-public class JpaItemRepository implements ItemRepository {
+public class JpaItemRepositoryV1 implements ItemRepository {
 
     //JPA 사용 시 필수
     private final EntityManager em;
