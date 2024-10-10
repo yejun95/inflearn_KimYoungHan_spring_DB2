@@ -152,4 +152,10 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
     this.repository = repository;
 }
 ```
+<br>
+<hr>
+<br>
 
+## ✔️ springtx directory
+###  학습 범위 : 7-8-1 - 
+- @Transactional 확인 및 기능
