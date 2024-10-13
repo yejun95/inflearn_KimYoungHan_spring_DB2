@@ -158,4 +158,41 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
 
 ## ✔️ springtx directory
 ###  학습 범위 : 7-8-1 - 
-- @Transactional 확인 및 기능
+- @Transactional 동작 확인 및 부가 기능
+  - 위치에 따른 실행 순서
+ 
+- 1. 트랜잭션 AOP 주의 사항
+  - 내부에서 메서드 직접 호출에 따른 AOP Proxy 적용이 되지 않음
+  - 새로운 class를 만들어서 호출하는 방식으로 변경
+  - `public` 메서드에만 트랜잭션 적용이 됨
+ 
+![image](https://github.com/user-attachments/assets/25623fc9-a095-48f9-8b8b-20e715665b57)
+> external 메서드 안에서 트랜잭션이 적용된 internal 함수 호출 시 this.internal로 인스턴스 참조가 되기 때문에<br>
+자기 자신을 호출하게 되므로 트랜잭션 AOP를 거치지 않고 인스턴스의 메서드를 바로 호출한다.
+<br>
+
+- 만약 `exnernal` 함수 호출 뒤에 바로 `internal` 함수를 호출하고 싶으면, 아래와 같이 별도의 클래스로 분리 후 호출한다.
+
+![image](https://github.com/user-attachments/assets/c61becd1-3894-42f1-82dd-657bfd38ae6f)
+> 이전처럼 this.internal로 호출하는 것이 아니기 때문에 AOP Proxy가 호출된다.
+<br>
+
+- 2. 트랜잭션 AOP 주의 사항
+  - 초기화 코드 `@PostContruct`는 스프링 컨테이너가 완전히 호출되기 전 먼저 실행되므로 트랜잭션 AOP가 적용이 안됨
+  - 때문에 초기화 코드가 필요하다면 `@EventListener(ApplicationReadyEvent.class)`를 대신 사용 -> 스프링 컨테이너 완전 뜬 후 실행됨
+<br>
+
+- 트랜잭션 옵션 설명
+
+- 예외 처리에 대한 커밋, 롤백
+  - 체크 예외 : 커밋 -> 비즈니스 의미가 있는 예외 (스프링에서 체크 예외는 의미가 있다고 판단하기 때문)
+  - 언체크 예외 : 롤백 -> 복구 불가능한 예외 (스프링에서 언체크 예외는 시스템 에러로써 복구 불가능하다고 판단하기 때문)
+
+예시
+```
+1. 정상: 주문시 결제를 성공하면 주문 데이터를 저장하고 결제 상태를 완료 로 처리한다.
+2. 시스템 예외: 주문시 내부에 복구 불가능한 예외가 발생하면 전체 데이터를 롤백한다.
+3. 비즈니스 예외: 주문시 결제 잔고가 부족하면 주문 데이터를 저장하고, 결제 상태를 대기 로 처리한다.
+이 경우 고객에게 잔고 부족을 알리고 별도의 계좌로 입금하도록 안내한다.
+```
+> 체크 예외인 경우에도 롤백을 하고 싶으면 @Transactional(rollbackFor = ***Exception.class) 사용
