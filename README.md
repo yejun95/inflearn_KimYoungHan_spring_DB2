@@ -92,11 +92,13 @@ Optional<Item> findById(Long id);
 <br>
 
 **예외 변환 전**
+
 ![image](https://github.com/user-attachments/assets/56a649c3-2aed-4e89-a553-f32db17a0cc8)
 > JPA Exception에 종속되어 버림
 <br>
 
 **예외 변환 후**
+
 ![image](https://github.com/user-attachments/assets/f7a1bc27-9a5d-40ae-bbfe-57abc343a7b6)
 > Proxy AOP에 의해 예외 변환
 <br>
@@ -144,7 +146,7 @@ OCP를 지킬 수 없다.
 ```java
 private final EntityManager em;
 private final JPAQueryFactory query;
-private final SpringDataJpaItemRepository repository;
+private final SpringDataJpaItemRepository repository; //JpaRepository의 구현체
 
 public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository repository) {
     this.em = em;
@@ -153,11 +155,30 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
 }
 ```
 <br>
+<br>
+
+### 학습 범위 : 7-8-1 - 7-8-4
+- DI, OCP를 도입하면 구현체 변경에는 자유로우나 복잡해진다.
+
+- DI, OCP를 도입하지 않으면 구현체 변경은 힘드나 코드가 직관적이며, 빠른 개발이 가능하다.
+
+- 즉, 트레이드 오프 관계이기 때문에 프로젝트 성격에 따라 알맞게 적용을 해야한다.
+
+- 어설픈 추상화는 오히려 독이 될 수 있기 때문이다.
+<br>
+
+![image](https://github.com/user-attachments/assets/dcd0f4eb-2484-44bf-8eae-dd36e84b58b6)
+> 추상화 도입 시 구현체 변경이 자유롭지만, 구조가 복잡해진다.
+<br>
+
+![image](https://github.com/user-attachments/assets/181717dc-e08b-4ff0-aeb7-bd68f7586d96)
+> 추상화를 하지 않으면 단순해지므로 빠른 개발이 가능해지지만, 구현체 변경은 할 수 없다.
+<br>
 <hr>
 <br>
 
 ## ✔️ springtx directory
-###  학습 범위 : 7-8-1 - 
+###  학습 범위 : 7-9-1 - 7-9-11
 - @Transactional 동작 확인 및 부가 기능
   - 위치에 따른 실행 순서
  
@@ -196,3 +217,25 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
 이 경우 고객에게 잔고 부족을 알리고 별도의 계좌로 입금하도록 안내한다.
 ```
 > 체크 예외인 경우에도 롤백을 하고 싶으면 @Transactional(rollbackFor = ***Exception.class) 사용
+<br>
+<br>
+
+### 학습 범위 : 7-10-1 - 
+- 트랜잭션 전파 설명
+ 
+- 물리 트랜잭션과 논리 트랜잭션
+  - 모든 논리 트랜잭션이 커밋되어야 물리 트랜잭션이 커밋된다.
+  - 하나의 논리 트랜잭션이라도 롤백되면 물리 트랜잭션은 롤백된다.
+
+![image](https://github.com/user-attachments/assets/131ea775-2de1-42da-93be-4bfcfc1613dc)
+![image](https://github.com/user-attachments/assets/ae86ccbf-6838-45a6-a15c-ef76c4f265f8)
+<br>
+
+- 트랜잭션 전파 예시
+
+![image](https://github.com/user-attachments/assets/831fe9e4-48dd-4bc7-b6fa-5f3aad4a00da)
+> 외부 트랜잭션이 커밋되어야 물리 트랜잭션이 커밋된다.
+내부 트랜잭션은 중간에 참여한 트랜잭션이기 때문에 커밋을 찍어도 아무런 변화가 없다.
+<br>
+
+
