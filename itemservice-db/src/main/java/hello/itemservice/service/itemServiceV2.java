@@ -17,8 +17,8 @@ import java.util.Optional;
 @Transactional
 public class itemServiceV2 implements ItemService {
 
-    private final ItemRepositoryV2 itemRepositoryV2;
-    private final ItemQueryRepositoryV2 itemQueryRepositoryV2;
+    private final ItemRepositoryV2 itemRepositoryV2; //SpringDataJPA
+    private final ItemQueryRepositoryV2 itemQueryRepositoryV2; //QueryDSL
 
     @Override
     public Item save(Item item) {
