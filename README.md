@@ -220,8 +220,8 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
 <br>
 <br>
 
-### 학습 범위 : 7-10-1 - 
-- 트랜잭션 전파 설명
+### 학습 범위 : 7-10-1 - 7-10-9
+**➡️ 트랜잭션 전파 설명**
  
 - 물리 트랜잭션과 논리 트랜잭션
   - 모든 논리 트랜잭션이 커밋되어야 물리 트랜잭션이 커밋된다.
@@ -230,12 +230,123 @@ public JpaItemRepositoryV4(EntityManager em, SpringDataJpaItemRepository reposit
 ![image](https://github.com/user-attachments/assets/131ea775-2de1-42da-93be-4bfcfc1613dc)
 ![image](https://github.com/user-attachments/assets/ae86ccbf-6838-45a6-a15c-ef76c4f265f8)
 <br>
+<br>
 
-- 트랜잭션 전파 예시
+**➡️ 트랜잭션 전파**
 
 ![image](https://github.com/user-attachments/assets/831fe9e4-48dd-4bc7-b6fa-5f3aad4a00da)
 > 외부 트랜잭션이 커밋되어야 물리 트랜잭션이 커밋된다.
 내부 트랜잭션은 중간에 참여한 트랜잭션이기 때문에 커밋을 찍어도 아무런 변화가 없다.
 <br>
+<br>
 
+**➡️ 트랜잭션 롤백**
+- 논리 트랜잭션 중 1개라도 롤백이 되면 물리 트랜잭션 자체가 롤백이 되야 한다.
 
+- 외부 트랜잭션 or 내부 트랜잭션 둘 중 1개라도 롤백이면 롤백인 것
+<br>
+
+![image](https://github.com/user-attachments/assets/a655a017-17f5-4140-9c9c-e0987f13abf7)
+> 외부 트랜잭션이 롤백되어 물리 트랜잭션 또한 롤백이 되었다.
+<br>
+
+![image](https://github.com/user-attachments/assets/4f77fa43-e906-4bd5-8e2b-0776f6d9078c)
+> 내부 트랜잭션이 롤백되어 물리 트랜잭션 또한 롤백이 되었다.
+<br>
+
+- 내부 트랜잭션이 롤백이 되면 트랜잭션 매니저에게 `rollbackOnly=true` 옵션을 전달한다.
+  - 내부 트랜잭션은 신규 트랜잭션이 아니기 때문에 실제로 커밋, 롤백을 호출 할 수가 없다.
+  - 이러한 문제점을 해결하기 위해 내부 트랜잭션에서 롤백이 발생하면 트랜잭션 매니저에게 플래그를 주는 것이다.
+
+![image](https://github.com/user-attachments/assets/d7ae76eb-ca58-4f07-bd06-a1fb86f13f9e)
+<br>
+<br>
+
+**➡️ REQUIRES_NEW**
+- 외부 트랜잭션에서 새로운 트랜잭션을 생성 시 별도의 트랜잭션으로 만들어준다.
+
+- 기존에는 외부 트랜잭션에서 내부 트랜잭션을 선언하면 "전부 커밋" or "전부 롤백" 이라는 상황이 생겼다.
+
+- 그러나 `REQUIRES_NEW`를 사용하면 내부 트랜잭션이 별도의 커넥션을 획득하여 분리된 트랜잭션을 실행하는 것이다.
+
+![image](https://github.com/user-attachments/assets/24dcfbc8-0c90-4363-a968-fdcb2c69f882)
+> 내부 트랜잭션이여도 REQUIRES_NEW를 통해 롤백하면 외부 트랜잭션에 영향을 주지 않는다.
+<br>
+
+![image](https://github.com/user-attachments/assets/40c55d9d-d82a-4c41-9370-c7ca51b8ac18)
+> 각각 다른 커넥션을 통해 트랜잭션을 실행하는 로직
+<br>
+
+- 💡 별도의 커넥션을 가지더라도 외부 트랜잭션이 먼저 끝나면, 내부 트랜잭션은 실행을 마칠 수가 없다. -> Exception 발생
+<br>
+<br>
+
+**➡️ 전파 옵션**
+- REQUIRED (@Transactional의 기본 설정이 이것임)
+  - 가장 많이 사용하는 기본 설정이다. 기존 트랜잭션이 없으면 생성하고, 있으면 참여한다.
+  - 트랜잭션이 필수라는 의미로 이해하면 된다. (필수이기 때문에 없으면 만들고, 있으면 참여한다.)
+  - 기존 트랜잭션 없음: 새로운 트랜잭션을 생성한다.
+  - 기존 트랜잭션 있음: 기존 트랜잭션에 참여한다.
+<br>
+
+- REQUIRES_NEW
+  - 항상 새로운 트랜잭션을 생성한다.
+  - 기존 트랜잭션 없음: 새로운 트랜잭션을 생성한다.
+  - 기존 트랜잭션 있음: 새로운 트랜잭션을 생성한다.
+<br>
+
+- SUPPORT
+  - 트랜잭션을 지원한다는 뜻이다. 기존 트랜잭션이 없으면, 없는대로 진행하고, 있으면 참여한다.
+  - 기존 트랜잭션 없음: 트랜잭션 없이 진행한다.
+  - 기존 트랜잭션 있음: 기존 트랜잭션에 참여한다.
+<br>
+
+- NOT_SUPPORT
+  - 트랜잭션을 지원하지 않는다는 의미이다.
+  - 기존 트랜잭션 없음: 트랜잭션 없이 진행한다.
+  - 기존 트랜잭션 있음: 트랜잭션 없이 진행한다. (기존 트랜잭션은 보류한다)
+<br>
+
+- MANDATORY
+  - 의무사항이다. 트랜잭션이 반드시 있어야 한다. 기존 트랜잭션이 없으면 예외가 발생한다.
+  - 기존 트랜잭션 없음: IllegalTransactionStateException 예외 발생
+  - 기존 트랜잭션 있음: 기존 트랜잭션에 참여한다.
+<br>
+
+- NEVER
+  - 트랜잭션을 사용하지 않는다는 의미이다. 기존 트랜잭션이 있으면 예외가 발생한다. 기존 트랜잭션도
+  - 허용하지 않는 강한 부정의 의미로 이해하면 된다.
+  - 기존 트랜잭션 없음: 트랜잭션 없이 진행한다.
+  - 기존 트랜잭션 있음: IllegalTransactionStateException 예외 발생
+<br>
+
+- NESTED
+  - 기존 트랜잭션 없음: 새로운 트랜잭션을 생성한다.
+  - 기존 트랜잭션 있음: 중첩 트랜잭션을 만든다.
+  - 중첩 트랜잭션은 외부 트랜잭션의 영향을 받지만, 중첩 트랜잭션은 외부에 영향을 주지 않는다.
+  - 중첩 트랜잭션이 롤백 되어도 외부 트랜잭션은 커밋할 수 있다.
+  - 외부 트랜잭션이 롤백 되면 중첩 트랜잭션도 함께 롤백된다.
+<br>
+
+- 참고
+  - JDBC savepoint 기능을 사용한다. DB 드라이버에서 해당 기능을 지원하는지 확인이 필요하다.
+  - 중첩 트랜잭션은 JPA에서는 사용할 수 없다.
+<br>
+<br>
+
+### 학습 범위 : 7-11-1 - 7-11-8
+- 트랜잭션 전파 활용 예시
+
+- 예외가 service로 올라온 경우 잡아서 복구시키기 (REQUIRES_NEW)
+
+![image](https://github.com/user-attachments/assets/40e9e436-2734-49bc-905e-6bc83e25d66c)
+> REQUIRES_NEW 덕분에 Log는 별개의 커넥션을 가짐
+<br>
+
+- 그러나 REQUIRES_NEW를 통해 커넥션을 분리하게 되면 HTTP 1개 요청에 2개의 커넥션을 사용하는 것으로
+DB의 부하를 줄 수 있다.
+
+- 반드시 필요한 곳에만 써야하며, 반드시 같이 실행해야하는 함수라면 아래 사진 처럼 애초에 분리시켜서 하는 방법이 있다.
+
+![image](https://github.com/user-attachments/assets/6ca73fc4-23d3-4e71-8783-55ee5a73ef14)
+> MemberService에서 member저장과 log 저장을 같이 하지 않고, 아예 분리 시킴
